@@ -5,12 +5,15 @@ require "rails"
 
 module Rails
   class App
-    def env_config; {} end
+    def env_config
+      {}
+    end
 
     def routes
       @routes ||= ActionDispatch::Routing::RouteSet.new.tap do |routes|
         routes.draw do
-          resource :birds
+          resources :birds
+          resource :birds, only: :show
         end
       end
     end
@@ -22,6 +25,9 @@ module Rails
 end
 
 class Bird
+  def self.special
+    self
+  end
 end
 
 class ApplicationController < ActionController::Base
@@ -29,7 +35,15 @@ class ApplicationController < ActionController::Base
 end
 
 class BirdsController < ApplicationController
-  expose :bird
+  expose(:birds)
+  expose(:bird)
+
+  expose(:special_birds) { Bird.special }
+  expose(:bird, from: :special_birds)
+
+  def index
+    render nothing: true
+  end
 
   def show
     render nothing: true
